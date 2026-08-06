@@ -1,3 +1,4 @@
+
 :root {
   --ink: #16261f;
   --ink-soft: #4b5a52;
@@ -485,3 +486,113 @@ h1, h2, h3 {
 .departure-window-quality {
   font-size: 11px;
 }
+
+/* ── New v2 ResultsCard classes ────────────────────────────────────────────── */
+
+/* Error card — shown when distance_km = 0 (geocoding failed) */
+.results-card--error {
+  border: 1px solid var(--amber);
+  background: var(--amber-bg);
+  padding: 16px;
+  border-radius: var(--radius);
+}
+.results-error-title {
+  font-weight: 700;
+  color: var(--amber);
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+.results-error-body {
+  color: var(--ink-soft);
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Arrival time — "Depart 07:30 → Arrive 08:14" */
+.results-arrival {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+.results-arrival strong {
+  color: var(--teal-dark);
+  font-weight: 700;
+}
+
+/* Route confidence star rating */
+.results-route-confidence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.results-route-confidence .stars {
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.results-route-confidence .confidence-label {
+  color: var(--ink-soft);
+}
+
+/* Flood risk warning — red left border */
+.results-flood-warning {
+  background: var(--red-bg);
+  border-left: 4px solid var(--red);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--red);
+  line-height: 1.5;
+}
+
+/* Weather trend — blue left border */
+.results-weather-trend {
+  background: #eef6ff;
+  border-left: 4px solid #2980b9;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1a4f7a;
+  line-height: 1.5;
+}
+
+/* Day pattern — amber left border */
+.results-day-pattern {
+  background: var(--amber-bg);
+  border-left: 4px solid var(--amber);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--amber);
+  line-height: 1.5;
+}
+
+/* Confidence score row */
+.results-confidence {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.results-confidence .confidence-emoji {
+  font-size: 15px;
+}
+
+/* Demand balancer — staggered departure */
+.results-staggered {
+  background: var(--green-bg);
+  border-left: 4px solid var(--teal);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--teal-dark);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* ── Remove duplicate Leaflet CSS warning note ──────────────────────────────
+   leaflet/dist/leaflet.css is imported once in main.jsx.
+   MapView.jsx imports it too for self-containment — Vite deduplicates it.
+   No action needed here. */
