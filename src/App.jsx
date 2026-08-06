@@ -8,7 +8,7 @@ import { getModeComparison, getRecommendation, geocodeForMap, getReports } from 
 
 export default function App() {
   const [city, setCity] = useState("nairobi");
-  const [options, setOptions] = useState([]); // all modes for the last search
+  const [options, setOptions] = useState([]);
   const [selectedMode, setSelectedMode] = useState(null);
   const [recommendation, setRecommendation] = useState(null);
   const [originPoint, setOriginPoint] = useState(null);
@@ -16,6 +16,9 @@ export default function App() {
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  // FIX 1: Store last search params so we can pass departureTime to ResultsCard
+  // and re-fetch recommendation when the user switches mode.
+  const [lastSearch, setLastSearch] = useState(null);
 
   const loadReports = useCallback(async (forCity) => {
     try {
@@ -23,7 +26,6 @@ export default function App() {
       setReports(data);
     } catch (err) {
       console.error("Couldn't load community reports:", err);
-      // Non-fatal — the map still works without report pins.
     }
   }, []);
 
@@ -31,12 +33,29 @@ export default function App() {
     loadReports(city);
   }, [city, loadReports]);
 
+  // FIX 2: Re-fetch recommendation whenever the user picks a different mode.
+  // Previously the recommendation only fetched once for comparison[0].mode
+  // and never updated when the user clicked a different mode pill.
+  useEffect(() => {
+    if (!selectedMode || !lastSearch) return;
+    getRecommendation({
+      origin:      lastSearch.origin,
+      destination: lastSearch.destination,
+      mode:        selectedMode,
+      city:        lastSearch.city,
+      time:        lastSearch.time,
+    })
+      .then(setRecommendation)
+      .catch((err) => console.error("Recommendation failed:", err));
+  }, [selectedMode, lastSearch]);
+
   function handleCityChange(newCity) {
     setCity(newCity);
     setOptions([]);
     setSelectedMode(null);
     setOriginPoint(null);
     setDestinationPoint(null);
+    setLastSearch(null);
   }
 
   async function handleSearch({ origin, destination, time, city: searchCity, modes }) {
@@ -50,18 +69,18 @@ export default function App() {
       ]);
 
       if (comparison.length === 0) {
-        throw new Error("The backend couldn't return a prediction for any mode. Check it's running and reachable.");
+        throw new Error(
+          "The backend couldn't return a prediction for any mode. Check it's running and reachable."
+        );
       }
 
+      // FIX 3: Save the full search params including time
+      setLastSearch({ origin, destination, time, city: searchCity });
       setOptions(comparison);
       setSelectedMode(comparison[0].mode);
       setOriginPoint(originGeo);
       setDestinationPoint(destGeo);
-
-      // Non-fatal — the rest of the results still work if this fails.
-      getRecommendation({ origin, destination, mode: comparison[0].mode, city: searchCity, time })
-        .then(setRecommendation)
-        .catch((err) => console.error("Recommendation failed:", err));
+      // Recommendation will fire automatically via the useEffect above
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -98,7 +117,13 @@ export default function App() {
             onSelectMode={setSelectedMode}
           />
           {error && <p className="form-status error">{error}</p>}
-          <ResultsCard result={selectedResult} />
+
+          {/* FIX 4: Pass departureTime so ResultsCard can show arrival time */}
+          <ResultsCard
+            result={selectedResult}
+            departureTime={lastSearch?.time ?? null}
+          />
+
           <DepartureOptions recommendation={recommendation} />
         </section>
 
